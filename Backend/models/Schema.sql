@@ -1,1 +1,19 @@
-CREATE TABLE user (id,email,Password )
+CREATE DATABASE myJournal;
+USE myJournal;
+CREATE TABLE users (
+    id INT PRIMARY KEY Auto_INCREMENT,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    user_password VARCHAR(255) NOT NULL
+);
+
+-- Create journals table
+CREATE TABLE journals (
+    id  INT PRIMARY KEY AUTO_INCREMENT,
+	user_Id INT ,
+    title VARCHAR(255) NOT NULL,
+    category VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_Id) REFERENCES users(id)
+);

@@ -1,9 +1,9 @@
 import { View } from "react-native"
 import MainAuthScreen from "./Screens/AuthScreen/MainAuth"
+import Createjournal from './Screens/CreateJournal/CreateJournal'
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { createContext, useEffect, useState,useRef } from "react";
 export const globalContext = createContext()
 import Home from "./Screens/HomeScreen/Home";
@@ -41,9 +41,9 @@ useEffect(()=>{
         headerShown : false
       }
     }>
-    <stack.Screen name="Home" component={Home}/>
+      <stack.Screen name="Home" component={Home}/>
       <stack.Screen  name="login" component={MainAuthScreen}/>
-      
+      <stack.Screen name="createJournal" component={Createjournal}/>
     </stack.Navigator>
     </globalContext.Provider>
     </NavigationContainer>

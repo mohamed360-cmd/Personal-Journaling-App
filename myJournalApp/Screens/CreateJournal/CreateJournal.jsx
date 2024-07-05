@@ -1,5 +1,7 @@
-import {View} from 'react-native'
-export default function Createjournal (){
+import {View,Text,StyleSheet} from 'react-native'
+import Navbar from '../../Componets/Navbar/Navbar'
+import JournalForm from './JournalForm'
+export default function Createjournal ({navigation}){
     /*
     1 able to select the date from calender
     2. add title
@@ -9,7 +11,13 @@ export default function Createjournal (){
     */
     return(
         <View>
-            <Text>This is where one will create the Journals</Text>
+            <Navbar Title={"Create Your Journal"} navigation={navigation}/>
+            <View style={styles.journalForm}>
+                <JournalForm/>
+            </View>
         </View>
     )
 }
+const styles = StyleSheet.create({
+
+})

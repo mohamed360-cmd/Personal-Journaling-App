@@ -9,6 +9,13 @@ export default function Home({ navigation }) {
     const [dateToday, setDateToday] = useState('')
     const { jwtToken, loggedin } = useContext(globalContext)
     const D = new Date()
+    function goToCreateJournal(){
+        try {
+            navigation.navigate("createJournal")
+        } catch (error) {
+            console.log('Error in the goToCreateJournal function',error)
+        }
+    } 
     const [testData, setTestData] = useState([
         {
             Created_At: '1/1/2025',
@@ -123,7 +130,7 @@ export default function Home({ navigation }) {
                             </View>
                         </View>
                     </TouchableHighlight>
-                    <TouchableHighlight>
+                    <TouchableHighlight onPress={goToCreateJournal}>
                         <View style={[styles.floatingBottomBarBtn, styles.floatingBottomBarBtnProminent]}>
                             <View>
                                 <Ionicons name='add-circle' size={60} color={'white'} />

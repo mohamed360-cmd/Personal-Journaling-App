@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet, ImageBackground, TouchableHighlight, TextInput, FlatList } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, TouchableHighlight, TextInput, FlatList,ActivityIndicator } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useContext, useEffect, useState, useRef } from "react";
 import { globalContext } from "../../App";
+import baseUrl from "../../config/serverUrl";
 import Bgimg from '../../Assets/bg2.png'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import AntDesign from 'react-native-vector-icons/AntDesign'
@@ -9,6 +10,10 @@ export default function Home({ navigation }) {
     const [dateToday, setDateToday] = useState('')
     const { jwtToken, loggedin } = useContext(globalContext)
     const D = new Date()
+    const [showSpinner,setShowSpinner] = useState(false)
+    const [userJournals,setUserJournals] = useState(null)
+    const [showJournalList,setShowJournalList] = useState(false)
+    const [showNoJournals,setshowNoJournals] = useState(false)
     function goToCreateJournal(){
         try {
             navigation.navigate("createJournal")
@@ -16,46 +21,33 @@ export default function Home({ navigation }) {
             console.log('Error in the goToCreateJournal function',error)
         }
     } 
-    const [testData, setTestData] = useState([
-        {
-            Created_At: '1/1/2025',
-            Title: 'Day In the Office ',
-            Content: 'this is test Content ibaifbiawbwdcibawifbcaisdb ci[ouaubwciabsd9u[fubawdicba[isdbciasbdc[iabsdciabwecilcbawi;b',
-            Category: 'Play',
-            id: Math.random() * 10
-        },
-        {
-            Created_At: '1/1/2025',
-            Title: 'Day In the Office ',
-            Content: 'this is test Content ibaifbiawbwdcibawifbcaisdb ci[ouaubwciabsd9u[fubawdicba[isdbciasbdc[iabsdciabwecilcbawi;b',
-            Category: 'Work',
-            id: Math.random() * 10
-        },
-        {
-            Created_At: '1/1/2025',
-            Title: 'Day In the Office ',
-            Content: 'this is test Content ibaifbiawbwdcibawifbcaisdb ci[ouaubwciabsd9u[fubawdicba[isdbciasbdc[iabsdciabwecilcbawi;b',
-            Category: 'Travels',
-            id: Math.random() * 10
-        },
-        {
-            Created_At: '1/1/2025',
-            Title: 'Day In the Office ',
-            Content: 'this is test Content ibaifbiawbwdcibawifbcaisdb ci[ouaubwciabsd9u[fubawdicba[isdbciasbdc[iabsdciabwecilcbawi;b',
-            Category: 'Work',
-            id: Math.random() * 10
-        },
-        {
-            Created_At: '1/1/2025',
-            Title: 'Day In the Office ',
-            Content: 'this is test Content ibaifbiawbwdcibawifbcaisdb ci[ouaubwciabsd9u[fubawdicba[isdbciasbdc[iabsdciabwecilcbawi;b',
-            Category: 'Work',
-            id: Math.random() * 10
-        },
-    ])
-    const getUserJournals = async () => {
+
+    
+    const fetchJournals = async() => {
+        setShowSpinner(true)
         try {
-            //function to get the users blogs 
+            const res = await fetch(`${baseUrl}/user/getJournals`,{
+                method : 'GET',
+                headers : {
+                    'Content-type' : 'application/json',
+                    'authorization' : `bearer ${jwtToken}`
+                }
+            })
+            const data = await res.json()
+            if(data.status){
+                if(data.result.length > 0){
+                    setShowSpinner(false)
+                    setshowNoJournals(false)
+                    setUserJournals(data.result)
+                    setShowJournalList(true)
+                }else{
+                    setShowSpinner(false)
+                    setshowNoJournals(true) 
+                }
+            }else{
+                //show error Alert
+                console.log('Error')
+            }
         } catch (error) {
             console.log("Error in the getUserJournals function ", error)
         }
@@ -69,9 +61,17 @@ export default function Home({ navigation }) {
         setDateToday(D.toDateString())
     }
 
+const goReadJournalHandler = (item)=>{
+    try {
+        navigation.navigate('readJournal',item)
+    } catch (error) {
+        console.log('Error in goReadJournalHandler  ',error)
+    }
+}
     useEffect(() => {
         isUserLogedin()
         getCurrentTimeDate()
+        fetchJournals()
     }, [loggedin])
     return (
         <View style={styles.mainHomeContainer}>
@@ -92,17 +92,26 @@ export default function Home({ navigation }) {
                 </ImageBackground>
             </View>
             <View style={styles.bodyContainer}>
-                <FlatList
-                    data={testData}
-                    keyExtractor={item => item.id}
+            {
+                showSpinner && <ActivityIndicator  size={30}/>
+            }
+            {
+                showNoJournals && <View>
+                    <Text>You Have Not Writen Any Journal Click the Add button to write Your Story</Text>
+                </View>
+            }
+   {        showJournalList &&     <FlatList
+                    data={userJournals}
+                    keyExtractor={item => item.created_at}
 
                     renderItem={({ item }) =>
+                    <TouchableHighlight onPress={()=>goReadJournalHandler(item)}>
                         <View style={styles.JournalContainer} >
                             <View style={styles.JournalContentContainer}>
-                                <Text style={[styles.JournalText, styles.JournalDate]}>{item.Created_At}</Text>
-                                <Text style={[styles.JournalText, styles.JournalTitle]}>{item.Title.toUpperCase()}</Text>
-                                <Text style={[styles.JournalText, styles.JournalContent]}>{item.Content.substring(0,60)}... Press to Read More</Text>
-                                <Text style={[styles.JournalCategory]}>{item.Category}</Text>
+                                <Text style={[styles.JournalText, styles.JournalDate]}>{item.JournalDate}</Text>
+                                <Text style={[styles.JournalText, styles.JournalTitle]}>{item.title.toUpperCase()}</Text>
+                                <Text style={[styles.JournalText, styles.JournalContent]}>{item.content.substring(0,60)}... Press to Read More</Text>
+                                <Text style={[styles.JournalCategory]}>{item.category}</Text>
                             </View>
                             <View style={styles.JournalMoreOPtionContainer}>
                                 <TouchableHighlight>
@@ -117,8 +126,9 @@ export default function Home({ navigation }) {
                                 </TouchableHighlight>
                             </View>
                         </View>
+                        </TouchableHighlight>
                     }
-                />
+                />}
                 <View style={styles.floatingBottomBar}>
                     <TouchableHighlight>
                         <View style={styles.floatingBottomBarBtn}>
@@ -240,7 +250,7 @@ const styles = StyleSheet.create({
         color: 'grey',
     },
     JournalContainer : {
-        backgroundColor : 'rgb(227, 210, 209)',
+        backgroundColor : 'rgb(255, 250, 249)',
         marginBottom :10,
         flexDirection :'row',
         padding : 5,

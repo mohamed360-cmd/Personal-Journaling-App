@@ -93,14 +93,15 @@ routes.post("/login", async (req, res) => {
         password.trim()
         const resultEmailExist = await checkEmailExists(email)
         if (resultEmailExist.status) {
-            const sqlStatement = 'SELECT `user_password` FROM users WHERE email= ?'
+            const sqlStatement = 'SELECT `user_password` , `id` FROM users WHERE email= ?'
             const sqlArguments = [resultEmailExist.result[0].email]
-            const passwordQueryResult = await query(sqlStatement, sqlArguments)
-            const hashedPassword = passwordQueryResult[0].user_password
+            const QueryResult = await query(sqlStatement, sqlArguments)
+            const hashedPassword = QueryResult[0].user_password
             const isPasswordCorrect = await bcrypt.compare(password, hashedPassword)
             if (isPasswordCorrect) {
                 //Generate JWT token and send back
-                const jwtToken = jwt.sign({email},process.env.SECRET_KEY,{expiresIn : '1min'})
+                const userId = QueryResult[0].id
+                const jwtToken = jwt.sign({email,userId},process.env.SECRET_KEY,{expiresIn : '1h'})
                 console.log(jwtToken)
                 res.status(200).json({status : true ,jwtToken})
             } else {
@@ -114,15 +115,67 @@ routes.post("/login", async (req, res) => {
     }
     }
 })
-routes.post('/test',async (req,res)=>{
-    const {token} = req.body
-    try {
-    const result = await checkJwtToken(token)
-    console.log(result)
-    res.json(result)
-    } catch (error) {
-        console.log("error in test",error)
+routes.get('/userverifier',async (req,res)=>{
+        const authorizationHeader = req.headers.authorization
+        if(!authorizationHeader ){
+            console.log("p",authorizationHeader) 
+            res.json({status : false, msg : 'no Authorization'})
+        }else{
+            try {
+                const token = authorizationHeader.replace('bearer ', '')
+                const result = await checkJwtToken(token)
+                console.log(result)
+                res.json(result)
+            } catch (error) {
+                console.log("Error in the userverifier Route",error)
+            }
+        }
+})
+routes.post('/addJournal',async(req,res)=>{
+    const authorizationHeader = req.headers.authorization
+    if(!authorizationHeader ){
+        console.log("p",authorizationHeader) 
+        res.json({status : false, msg : 'no Authorization'})
+    }else{
+        try {
+            const token = authorizationHeader.replace('bearer ', '')
+            const result = await checkJwtToken(token.trim())
+            if(result.status){
+                const {journalDate,Title,content,Category} = req.body
+                const userId = result.decoded.userId
+                const sql = 'INSERT INTO `journals` (`user_id`,`title`,`category`,`content`,`JournalDate`) VALUES(?,?,?,?,?) '
+                const sqlArguments = [userId,Title,Category,content,journalDate]
+                const result2 = await query(sql,sqlArguments) // the result from the insert journal operation
+                res.json({status : true ,msg : 'Successefuly Added Journal'})
+            }else{
+                res.json({status : false,msg : 'JWT token Not accepted'})
+            }
+        } catch (error) {
+            console.log("Error in the addJournal Route",error)
+        }
     }
-
+})
+routes.get('/getJournals',async(req,res)=>{
+    const authorizationHeader = req.headers.authorization
+    if(!authorizationHeader ){
+        console.log("p",authorizationHeader) 
+        res.json({status : false, msg : 'no Authorization'})
+    }else{
+        try {
+            const token = authorizationHeader.replace('bearer ', '')
+            const result = await checkJwtToken(token.trim())
+            if (result.status){
+                const userId = result.decoded.userId
+                const sql = 'SELECT * FROM `journals` WHERE `user_Id` = ?';
+                const sqlArguments = [userId]
+                const QueryResult = await query(sql,sqlArguments)
+                res.json({status : true ,result : QueryResult})
+            }else{
+                res.json({status : false,msg : 'JWT token Not accepted'})
+            }
+        } catch (error) {
+            console.log("Error in the getJournals Route",error)
+        }
+    }
 })
 module.exports = routes

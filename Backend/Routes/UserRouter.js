@@ -28,7 +28,6 @@ const checkJwtToken = (jwt_token) => {
                     resolve({ status: false, msg: 'Token_Invalid' });
                 }
             } else {
-                console.log(decoded);
                 resolve({ status: true, decoded });
             }
         });
@@ -102,8 +101,7 @@ routes.post("/login", async (req, res) => {
                 //Generate JWT token and send back
                 const userId = QueryResult[0].id
                 const jwtToken = jwt.sign({email,userId},process.env.SECRET_KEY,{expiresIn : '1h'})
-                console.log(jwtToken)
-                res.status(200).json({status : true ,jwtToken})
+                res.status(200).json({status : true ,jwtToken,userEmail : email})
             } else {
                 res.status(201).json({ status: false, msg: "Wrong Email or Password" })
             }
@@ -124,7 +122,7 @@ routes.get('/userverifier',async (req,res)=>{
             try {
                 const token = authorizationHeader.replace('bearer ', '')
                 const result = await checkJwtToken(token)
-                console.log(result)
+console.log(result)
                 res.json(result)
             } catch (error) {
                 console.log("Error in the userverifier Route",error)
@@ -177,5 +175,81 @@ routes.get('/getJournals',async(req,res)=>{
             console.log("Error in the getJournals Route",error)
         }
     }
+})
+routes.post('/updateJournal',async(req,res)=>{
+    const authorizationHeader = req.headers.authorization
+    if(!authorizationHeader ){
+        console.log("p",authorizationHeader) 
+        res.json({status : false, msg : 'no Authorization'})
+    }else{
+        try {
+            const token = authorizationHeader.replace('bearer ', '')
+            console.log(token)
+            const result = await checkJwtToken(token.trim())
+            if(result.status){
+                const {JournalID,journalDate,Title,content,Category} = req.body
+                
+                const userId = result.decoded.userId
+                const sql = 'UPDATE  `journals` SET  `title` = ? , `category` = ? ,`content` = ? ,`JournalDate` = ?  WHERE `id`= ? '
+                const sqlArguments = [Title,Category,content,journalDate,JournalID]
+                const result2 = await query(sql,sqlArguments) // the result from the update journal operation
+                res.json({status : true ,msg : 'Successefuly updated Journal'})
+            }else{
+                res.json({status : false,msg : 'JWT token Not accepted'})
+            }
+        } catch (error) {
+            console.log("Error in the updateJournal Route",error)
+        }
+    }
+})
+routes.post('/resetpassword',async(req,res)=>{
+    const authorizationHeader = req.headers.authorization
+    if(!authorizationHeader ){
+        console.log("p",authorizationHeader) 
+        res.json({status : false, msg : 'no Authorization'})
+    }else{
+        try {
+            const token = authorizationHeader.replace('bearer ', '')
+            const result = await checkJwtToken(token.trim())
+            if(result.status){
+                const {email,password} = req.body
+                const salt = await bcrypt.genSalt(12)
+                const hashedPassword = await bcrypt.hash(password,salt)
+                const sql = 'UPDATE `users` SET `user_password` = ? WHERE `email` = ? '
+                const sqlArguments = [hashedPassword,email]
+                const result2 = await query(sql,sqlArguments)
+                res.json({status : true ,msg : 'Successefuly Updated Password'})
+            }else{
+                res.json({status : false,msg : 'JWT token Not accepted'})
+            }
+        } catch (error) {
+            console.log("Error in the resetpassword Route",error)
+        }
+    }
+
+})
+routes.post('/deleteJournal',async(req,res)=>{
+    const authorizationHeader = req.headers.authorization
+    if(!authorizationHeader ){
+        console.log("p",authorizationHeader) 
+        res.json({status : false, msg : 'no Authorization'})
+    }else{
+        try {
+            const token = authorizationHeader.replace('bearer ', '')
+            const result = await checkJwtToken(token.trim())
+            if(result.status){
+                const {journalID} = req.body
+                const sql = 'DELETE FROM `journals`  WHERE `id` = ? '
+                const sqlArguments = [journalID]
+                const result2 = await query(sql,sqlArguments)
+                res.json({status : true ,msg : 'Successefuly Deleted Journal'})
+            }else{
+                res.json({status : false,msg : 'JWT token Not accepted'})
+            }
+        } catch (error) {
+            console.log("Error in the deleteJournal Route",error)
+        }
+    }
+
 })
 module.exports = routes

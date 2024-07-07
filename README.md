@@ -24,7 +24,7 @@ The purpose of MyJournalApp is to enable users to log their day-to-day activitie
    - Run `npm i` to install necessary dependencies.
 
 5. **Start Backend Server:**
-   - Run `npm start` in the terminal to start the backend server.
+   - Run `npm run start` in the terminal to start the backend server.
    - Open CMD in Windows and type `ipconfig` to find your wireless IPv4 private IP address. Copy this address (e.g., `192.168.100.59`).
 
 #### Frontend Setup
@@ -40,7 +40,7 @@ The purpose of MyJournalApp is to enable users to log their day-to-day activitie
    - Run `npm i` to install frontend dependencies.
 
 3. **Start Frontend Development Server:**
-   - After dependencies installation, run `npm start`.
+   - After dependencies installation, run `npm run start`.
    - When prompted to choose a platform, press `a` for Android.
    - The application will build and install on your connected Android device.
    

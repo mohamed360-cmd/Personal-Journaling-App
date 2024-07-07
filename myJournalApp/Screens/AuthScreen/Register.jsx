@@ -58,8 +58,8 @@ return(
 
             <Text style={styles.FormTitle}>Register</Text>
         <TextInput placeholder="Email" style={styles.textInput} onChangeText={e=>setEmailValue(e)} placeholderTextColor={'black'}/>
-        <TextInput placeholder="Password"  style={styles.textInput} onChangeText={e=>setPasswordValue(e)} placeholderTextColor={'black'}/>
-        <TextInput placeholder="Password Again"  style={styles.textInput} onChangeText={e=>setPasswordAgainValue(e)} placeholderTextColor={'black'}/>
+        <TextInput placeholder="Password"  secureTextEntry={true} style={styles.textInput} onChangeText={e=>setPasswordValue(e)} placeholderTextColor={'black'}/>
+        <TextInput placeholder="Password Again"  secureTextEntry={true} style={styles.textInput} onChangeText={e=>setPasswordAgainValue(e)} placeholderTextColor={'black'}/>
         <TouchableHighlight style={styles.PrimaryAuthFormButton}>
         <View>
              <Text style={styles.authPrimaryButtonText} onPress={registerBtnHandler}>Register</Text>

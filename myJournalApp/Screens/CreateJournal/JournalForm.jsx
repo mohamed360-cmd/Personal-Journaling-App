@@ -4,18 +4,18 @@ import { Calendar } from 'react-native-calendars'
 import baseUrl from '../../config/serverUrl'
 import ErrorAlert from '../../Componets/Alerts/ErrorAlert'
 import SuccessAlert from '../../Componets/Alerts/SuccessAlert'
-export default function JournalForm({create,update,jwt,navigation}) {
-    
-    const [selectedDate, setSelectedDate] = useState('')
-    const [title, setTitle] = useState('')
-    const [content, setContent] = useState('')
-    const [category, setCategory] = useState('')
-    const [showDatePickerModal, setShowDatePickerModal] = useState(false)
-    const [showErrorAlert,setShowErrorAlert] = useState(false)
-    const [errorMsg,setErrorMsg] = useState('')
-    const [showSuccesAlert,setShowSuccessAlert] = useState(false)
-    const [successMsg,setSuccessMsg] = useState('')
-    const [disableForm,setDisableForm] = useState(false)
+export default function JournalForm({create,update,jwt,navigation,editData}) {    
+    const [journalId, setJournalId] = useState(update && editData ? editData.id : '');
+    const [selectedDate, setSelectedDate] = useState(update && editData ? editData.JournalDate : '');
+    const [Title, setTitle] = useState(update && editData ? editData.title : '');
+    const [Content, setContent] = useState(update && editData ? editData.content : '');
+    const [Category, setCategory] = useState(update && editData ? editData.category : '');
+    const [showDatePickerModal, setShowDatePickerModal] = useState(false);
+    const [showErrorAlert, setShowErrorAlert] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
+    const [showSuccesAlert, setShowSuccessAlert] = useState(false);
+    const [successMsg, setSuccessMsg] = useState('');
+    const [disableForm, setDisableForm] = useState(false);
     function showDateModal() {
         setShowDatePickerModal(true)
     }
@@ -24,14 +24,14 @@ export default function JournalForm({create,update,jwt,navigation}) {
         setSelectedDate(day.dateString)
         setShowDatePickerModal(false)
     }
-const sendJournal = async(details)=>{
+const sendJournal = async(details,APIRoute)=>{
     
     try {
-        const res = await fetch(`${baseUrl}/user/addJournal`,{
+        const res = await fetch(`${baseUrl}/user/${APIRoute}`,{
             method : 'POST',
             headers : {
                 'content-type' : 'application/json',
-                'authorization' : `bearer ${jwt.trim()}`
+                'authorization' : `bearer ${jwt}`
             },
             body : JSON.stringify(details)
         })
@@ -48,18 +48,33 @@ const sendJournal = async(details)=>{
             setShowSuccessAlert(true)
         }
     } catch (error) {
-        console.log("Error in the createBlogHandler function",error)
+        console.log("Error in the sendBlog  function",error)
     }
 }
 const createJournalHandler = ()=>{
-    if(selectedDate.length > 0 && title.trim().length > 0 && content.trim().length > 0 && category.trim().length > 0 ){
+    if(selectedDate.length > 0 && Title.trim().length > 0 && Content.trim().length > 0 && Category.trim().length > 0 ){
         const journalData = {
             journalDate :selectedDate,
-            Title :title.trim(),
-            content : content.trim(),
-            Category : category.trim()
+            Title :Title.trim(),
+            content : Content.trim(),
+            Category : Category.trim()
         }
-        sendJournal(journalData)
+        sendJournal(journalData,'addJournal')
+    }else{
+        setErrorMsg("Journal Field length Not Valid")
+        setShowErrorAlert(true)
+    }
+}
+const updateJournalBtnHandler = ()=>{
+    if(selectedDate.length > 0 && Title.trim().length > 0 && Content.trim().length > 0 && Category.trim().length > 0 ){
+        const journalData = {
+            journalDate :selectedDate,
+            Title :Title.trim(),
+            content : Content.trim(),
+            Category : Category.trim(),
+            JournalID : journalId
+        }
+        sendJournal(journalData,'updateJournal')
     }else{
         setErrorMsg("Journal Field length Not Valid")
         setShowErrorAlert(true)
@@ -83,7 +98,7 @@ setTimeout(()=>{
                     </View>
                 </TouchableOpacity>
                 <Text style={{ color: 'white', fontSize: 16 }}>
-                    {selectedDate.length < 1 ? "Select Date" : selectedDate}
+                 {selectedDate.length < 1 ? "Select Date" : selectedDate}
                 </Text>
             </View>
             {showDatePickerModal && (
@@ -96,14 +111,14 @@ setTimeout(()=>{
                 style={styles.input}
                 placeholder='Enter The Journal Title'
                 placeholderTextColor={'grey'}
-                value={title}
+                value={Title}
                 onChangeText={setTitle}
             />
             <TextInput
                 style={[styles.textArea, styles.input]}
                 placeholder='Write Your Story here'
                 placeholderTextColor={'grey'}
-                value={content}
+                value={Content}
                 onChangeText={setContent}
                 multiline={true}
             />
@@ -111,7 +126,7 @@ setTimeout(()=>{
                 style={styles.input}
                 placeholder='Journal Category eg Office,Travel'
                 placeholderTextColor={'grey'}
-                value={category}
+                value={Category}
                 onChangeText={setCategory}
             />
             <View style={styles.JournalFormControlsContainer}>
@@ -125,7 +140,7 @@ setTimeout(()=>{
                 }
                 {
                     update &&
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={updateJournalBtnHandler}>
                      <View style={[styles.JournalFormControlsBtn,styles.updateJournaal]}>
                         <Text style={styles.JournalFormControlsBtnText}>Update</Text>
                     </View>

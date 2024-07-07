@@ -21,6 +21,7 @@ export default function LoginForm(){
         try {
             await AsyncStorage.setItem("jwtToken",jwt_token)
             await AsyncStorage.setItem("LoggedIn","true")
+            
             setLoggedin('true')
            _movetoHomeScreen()
         } catch (error) {
@@ -41,7 +42,7 @@ export default function LoginForm(){
                 //if the status is true store the jwt token returned then naivate to another page 
                 const jwtToken = data.jwtToken
                 _saveLoginToLocalStorage(jwtToken)
-
+                await AsyncStorage.setItem('UserEmail',data.userEmail)
             }else{
                 setErrorMessage(data.msg)
                 setShowErrorAlert(true)
@@ -67,7 +68,7 @@ return(
     <View style={styles.LoginForm}>
         <Text style={styles.FormTitle}>Login</Text>
         <TextInput placeholder="Email" style={styles.textInput} placeholderTextColor={'grey'} onChangeText={e=>setEmailValue(e)}/>
-        <TextInput placeholder="Password"  style={styles.textInput} placeholderTextColor={'grey'} onChangeText={e=>setPasswordValue(e)}/>
+        <TextInput placeholder="Password"  secureTextEntry={true} style={styles.textInput} placeholderTextColor={'grey'} onChangeText={e=>setPasswordValue(e)}/>
         <TouchableHighlight style={styles.PrimaryAuthFormButton}>
             <View>
                <Text style={styles.authPrimaryButtonText} onPress={loginBtnHandler}>Login</Text> 

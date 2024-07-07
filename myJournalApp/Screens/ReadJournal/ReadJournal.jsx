@@ -3,6 +3,7 @@ import Navbar from '../../Componets/Navbar/Navbar';
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 export default function ReadJournal({ navigation,route }) {
     const { title, content, category } = route.params;
+
     return (
         <View style={styles.MainReadJournalContainer}>
             <Navbar Title={'Read your Journal'} navigation={navigation}/>
@@ -10,12 +11,7 @@ export default function ReadJournal({ navigation,route }) {
                 <Text style={styles.title}>{title}</Text>
                 <Text style={styles.content}>{content}</Text>
                 <Text style={styles.category}>Category: {category}</Text>  
-                <TouchableHighlight>
-                <View style={styles.EditBtn}>
-                    <FontAwesome name="edit" size={20} color={'white'}/>
-                    <Text style={{color : 'white'}}>Edit</Text>
-                </View>                     
-                </TouchableHighlight> 
+
             
             </View>
 
